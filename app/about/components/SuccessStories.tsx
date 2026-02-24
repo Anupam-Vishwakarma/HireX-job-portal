@@ -69,169 +69,63 @@ function StoryCard({ story, idx }: { story: typeof stories[0]; idx: number }) {
       transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
       viewport={{ once: true, margin: "-80px" }}
       className={`
-        flex flex-col
-        lg:flex-row
+        flex flex-col lg:flex-row
         ${story.reverse ? "lg:flex-row-reverse" : ""}
-        items-stretch
-        gap-0
-        rounded-3xl
-        overflow-hidden
-        border ${story.textBorder}
-        shadow-2xl
-        ${story.color}
+        items-stretch gap-0 rounded-3xl overflow-hidden
+        border ${story.textBorder} shadow-2xl ${story.color}
       `}
     >
       {/* ── IMAGE PANEL ── */}
-      <div className="relative w-full lg:w-1/2 min-h-[280px] sm:min-h-[380px] lg:min-h-[500px] overflow-hidden">
-        {/* Gradient overlay matching the theme colour */}
-        <div
-          className={`absolute inset-0 bg-gradient-to-br ${story.imageOverlay} z-10 mix-blend-overlay`}
-        />
+      {/* Fix: Increased mobile aspect ratio to accommodate the full graphic height */}
+      <div className="relative w-full lg:w-1/2 aspect-[4/3] sm:aspect-video lg:min-h-[550px] overflow-hidden bg-[#060d1f]">
+        <div className={`absolute inset-0 bg-gradient-to-br ${story.imageOverlay} z-10 mix-blend-overlay`} />
 
-        {/* Parallax image */}
-        <motion.div className="absolute inset-0" style={{ y }}>
+        <motion.div
+          className="relative w-full h-full p-4 lg:p-0" // Added padding on mobile to keep logo away from edges
+          style={{ y: typeof window !== 'undefined' && window.innerWidth < 1024 ? 0 : y }}
+        >
           <Image
             src={story.image}
             alt={story.title}
             fill
             sizes="(max-width:1024px) 100vw, 50vw"
-            className="object-cover"
+            // Fix: object-contain on mobile ensures the logo and full UI are visible
+            // object-cover on desktop keeps the premium "full-screen" look
+            className="object-contain lg:object-cover object-center"
             priority={idx === 0}
           />
         </motion.div>
 
-        {/* Bottom fade into card bg — mobile only */}
-        <div
-          className={`absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t ${story.color} to-transparent z-20 lg:hidden`}
-        />
+        {/* Bottom fade — removed on mobile to avoid covering the bottom of the image UI */}
+        <div className={`absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t ${story.color} to-transparent z-20 hidden lg:block`} />
       </div>
 
       {/* ── TEXT PANEL ── */}
-      <div
-        className={`
-          relative w-full lg:w-1/2
-          flex flex-col justify-center
-          ${story.panelBg}
-          px-7 sm:px-10 lg:px-12 xl:px-16
-          py-10 sm:py-14 lg:py-16
-        `}
-      >
-        {/* Ambient glow blob — top corner */}
-        <div
-          className={`
-            absolute pointer-events-none
-            ${story.reverse ? "-top-24 -left-24" : "-top-24 -right-24"}
-            w-72 h-72 rounded-full
-            bg-gradient-to-br ${story.textGlow}
-            blur-3xl opacity-60
-          `}
-        />
-
-        {/* Secondary glow blob — bottom opposite corner */}
-        <div
-          className={`
-            absolute pointer-events-none
-            ${story.reverse ? "-bottom-20 -right-20" : "-bottom-20 -left-20"}
-            w-56 h-56 rounded-full
-            bg-gradient-to-br ${story.textGlow}
-            blur-3xl opacity-30
-          `}
-        />
-
-        {/* Tag */}
-        <motion.div
-          initial={{ opacity: 0, x: story.reverse ? 20 : -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          viewport={{ once: true }}
-          className="inline-flex items-center gap-2 mb-5 sm:mb-6 w-fit relative z-10"
-        >
+      <div className={`relative w-full lg:w-1/2 flex flex-col justify-center ${story.panelBg} px-7 sm:px-10 lg:px-12 xl:px-16 py-10 sm:py-14 lg:py-16`}>
+        <div className={`absolute pointer-events-none ${story.reverse ? "-top-24 -left-24" : "-top-24 -right-24"} w-72 h-72 rounded-full bg-gradient-to-br ${story.textGlow} blur-3xl opacity-60`} />
+        
+        <div className="inline-flex items-center gap-2 mb-5 sm:mb-6 w-fit relative z-10">
           <span className={`w-2 h-2 rounded-full ${story.tagDot} animate-pulse`} />
-          <span className={`${story.tagText} font-semibold uppercase tracking-[0.3em] text-[10px] sm:text-[11px]`}>
-            {story.tag}
-          </span>
-        </motion.div>
+          <span className={`${story.tagText} font-semibold uppercase tracking-[0.3em] text-[10px] sm:text-[11px]`}>{story.tag}</span>
+        </div>
 
-        {/* Title */}
-        <motion.h3
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          viewport={{ once: true }}
-          className="
-            relative z-10
-            font-bold text-white mb-5 sm:mb-6 tracking-tight leading-tight
-            text-[clamp(24px,3.5vw,44px)]
-          "
-        >
-          {story.title}
-        </motion.h3>
+        <h3 className="relative z-10 font-bold text-white mb-5 sm:mb-6 tracking-tight leading-tight text-[clamp(24px,3.5vw,44px)]">{story.title}</h3>
+        <div className={`relative z-10 h-px bg-gradient-to-r ${story.divider} mb-5 sm:mb-6`} />
+        <p className="relative z-10 text-gray-400 font-light leading-[1.85] text-[clamp(14px,1.5vw,16px)] mb-8 sm:mb-10">{story.desc}</p>
 
-        {/* Divider */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          viewport={{ once: true }}
-          className={`relative z-10 h-px bg-gradient-to-r ${story.divider} mb-5 sm:mb-6 origin-left`}
-        />
-
-        {/* Description */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.35 }}
-          viewport={{ once: true }}
-          className="
-            relative z-10
-            text-gray-400 font-light leading-[1.85]
-            text-[clamp(13px,1.5vw,16px)]
-            mb-8 sm:mb-10
-          "
-        >
-          {story.desc}
-        </motion.p>
-
-        {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          viewport={{ once: true }}
-          className="relative z-10"
-        >
-          <button
-            className={`
-              group relative
-              inline-flex items-center gap-2 sm:gap-3
-              text-white font-semibold
-              px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl
-              text-[clamp(12px,1.5vw,15px)]
-              transition-all duration-300
-              hover:-translate-y-0.5
-              ${
-                idx === 1
-                  ? "bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/30 hover:shadow-blue-500/50 hover:shadow-xl"
-                  : idx === 2
-                  ? "bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/30 hover:shadow-blue-500/50 hover:shadow-xl"
-                  : "bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/30 hover:shadow-blue-500/50 hover:shadow-xl"
-              }
-            `}
-          >
+        <div className="relative z-10">
+          <button className="group relative inline-flex items-center gap-2 sm:gap-3 text-white font-semibold px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl text-[clamp(12px,1.5vw,15px)] transition-all duration-300 hover:-translate-y-0.5 bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/30">
             <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current flex-shrink-0" viewBox="0 0 16 16">
               <path d="M8 0a8 8 0 110 16A8 8 0 018 0zm-1.5 5.5v5l4.5-2.5-4.5-2.5z" />
             </svg>
             Watch the video
-            <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">
-              →
-            </span>
+            <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
           </button>
-        </motion.div>
+        </div>
       </div>
     </motion.div>
   );
 }
-
 export default function SuccessStories() {
   return (
     <section
